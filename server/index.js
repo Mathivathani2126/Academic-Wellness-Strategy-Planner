@@ -42,7 +42,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-// Database connection & Server Start
+// Database connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/academic-wellness')
   .then(async () => {
     console.log('Connected to MongoDB');
@@ -63,11 +63,12 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/academic-we
     } catch (err) {
       console.error('Failed to seed admin', err);
     }
-
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err);
   });
+
+// Start Server immediately so Render detects the open port
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
