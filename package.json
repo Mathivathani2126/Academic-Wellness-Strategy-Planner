@@ -1,13 +1,9 @@
 {
   "name": "academic-wellness-strategy-planner",
   "version": "1.0.0",
-  "private": true,
+  "description": "Fullstack deployment configuration for Render",
   "scripts": {
-    "install:all": "npm install --prefix client && npm install --prefix server",
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "start": "concurrently \"npm start --prefix server\" \"npm run build --prefix client && npm run preview --prefix client\""
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "build": "npm --prefix client install && npm --prefix server install && npm --prefix client run build",
+    "start": "npm --prefix server start"
   }
 }
