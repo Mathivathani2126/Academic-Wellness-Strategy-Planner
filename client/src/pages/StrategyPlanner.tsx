@@ -599,7 +599,9 @@ export default function StrategyPlanner() {
                                     <div className="p-2 bg-white rounded-lg shadow-sm font-bold text-indigo-600 flex-none">{strategy.subject.slice(0, 2).toUpperCase()}</div>
                                     <h5 className="font-bold text-slate-800 text-lg">{strategy.subject}</h5>
                                 </div>
-                                <p className="text-sm text-slate-600 mb-5 leading-relaxed">"{strategy.tips}"</p>
+                                <div className="text-sm text-slate-600 mb-5 leading-relaxed whitespace-pre-line">
+                                    {strategy.tips}
+                                </div>
                                 
                                 {strategy.resources && strategy.resources.length > 0 && (
                                     <div className="bg-white p-4 rounded-lg border border-slate-100">
