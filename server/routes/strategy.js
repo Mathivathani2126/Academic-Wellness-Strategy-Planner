@@ -203,10 +203,29 @@ router.post('/', authMiddleware, async (req, res) => {
         const userId = req.user.id;
 
         let wellnessScore = 100;
-        if (sleepHours < 6) wellnessScore -= 20;
-        else if (sleepHours > 9) wellnessScore -= 10;
-        if (studyHours > 8) wellnessScore -= 15;
+        
+        // Hours impact
+        if (sleepHours < 7) wellnessScore -= (7 - sleepHours) * 10;
+        else if (sleepHours > 9) wellnessScore -= (sleepHours - 9) * 5;
+        
+        if (studyHours > 8) wellnessScore -= (studyHours - 8) * 5;
         else if (studyHours < 2) wellnessScore -= 10;
+
+        // Stress impacts
+        if (stressLevel === 'High') wellnessScore -= 20;
+        else if (stressLevel === 'Moderate') wellnessScore -= 5;
+        else if (stressLevel === 'Low') wellnessScore += 5;
+
+        // Routine / Mode impacts
+        if (mode === 'Intensive') wellnessScore -= 10;
+        else if (mode === 'Relaxed') wellnessScore += 5;
+
+        // Exam Pressure impacts
+        if (examFrequency === 'Very Frequent (Weekly)') wellnessScore -= 10;
+        else if (examFrequency === 'Frequent (Bi-weekly)') wellnessScore -= 5;
+
+        // Math Bounds calculation
+        wellnessScore = Math.max(0, Math.min(100, Math.round(wellnessScore)));
 
         let adviceData = generateFallbackAdvice(req.body);
 
