@@ -230,52 +230,52 @@ export default function Dashboard() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Badge 1: Early Bird */}
-            <div className="bg-white/60 border border-white hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1">
+            {/* Badge 1: First Step */}
+            <div className={`bg-white/60 border hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1 ${strategies.length < 1 ? 'opacity-70 grayscale border-transparent' : 'border-white'}`}>
                 <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 text-4xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-white">
                     🌅
                 </div>
-                <h3 className="font-bold text-slate-800 mb-1">Early Riser</h3>
-                <p className="text-xs text-slate-500 font-medium h-8">Completed 5 morning sessions</p>
+                <h3 className="font-bold text-slate-800 mb-1">Planner Initiate</h3>
+                <p className="text-xs text-slate-500 font-medium h-8">Created your first strategy outline</p>
                 <div className="mt-4 w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner flex relative">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '75%' }} transition={{ duration: 1, delay: 0.5 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: strategies.length >= 1 ? '100%' : '0%' }} transition={{ duration: 1, delay: 0.5 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
                 </div>
             </div>
 
             {/* Badge 2: Focus Master */}
-            <div className="bg-white/60 border border-white hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1">
+            <div className={`bg-white/60 border hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1 ${strategies.length < 5 ? 'opacity-70 grayscale border-transparent' : 'border-white'}`}>
                 <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 text-4xl shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 border border-white">
                     🎯
                 </div>
                 <h3 className="font-bold text-slate-800 mb-1">Focus Master</h3>
-                <p className="text-xs text-slate-500 font-medium h-8">Logged 10 hrs of deep work</p>
+                <p className="text-xs text-slate-500 font-medium h-8">Generated 5 strategies ({Math.min(5, strategies.length)}/5)</p>
                 <div className="mt-4 w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner flex relative">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '50%' }} transition={{ duration: 1, delay: 0.6 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: Math.min(100, (strategies.length / 5) * 100) + '%' }} transition={{ duration: 1, delay: 0.6 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
                 </div>
             </div>
 
-            {/* Badge 3: Consistency King */}
-            <div className="bg-white/60 border border-white hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1">
+            {/* Badge 3: Streak Keeper */}
+            <div className={`bg-white/60 border hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1 ${strategies.length < 10 ? 'opacity-70 grayscale border-transparent' : 'border-white'}`}>
                 <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 text-4xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-white">
                     🔥
                 </div>
                 <h3 className="font-bold text-slate-800 mb-1">Streak Keeper</h3>
-                <p className="text-xs text-slate-500 font-medium h-8">Maintained 7 day login streak</p>
+                <p className="text-xs text-slate-500 font-medium h-8">Generated 10 active plans ({Math.min(10, strategies.length)}/10)</p>
                 <div className="mt-4 w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner flex relative">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1, delay: 0.7 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
-                    <Sparkles size={12} className="text-indigo-200 absolute right-0 -top-2 animate-pulse z-20" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: Math.min(100, (strategies.length / 10) * 100) + '%' }} transition={{ duration: 1, delay: 0.7 }} className="bg-linear-to-r from-indigo-400 to-indigo-600 h-2 outline-none rounded-full relative z-10" />
+                    {strategies.length >= 10 && <Sparkles size={12} className="text-indigo-200 absolute right-0 -top-2 animate-pulse z-20" />}
                 </div>
             </div>
 
             {/* Badge 4: Zen Master (Locked) */}
-            <div className="bg-slate-50/50 border border-transparent rounded-3xl p-6 flex flex-col items-center text-center opacity-70">
-                <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-4 text-4xl shadow-inner grayscale border border-slate-200">
+            <div className={`bg-white/60 border hover:border-indigo-200 rounded-3xl p-6 flex flex-col items-center text-center group transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-lg hover:-translate-y-1 ${strategies.length < 20 ? 'opacity-70 grayscale border-transparent' : 'border-white'}`}>
+                <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-4 text-4xl shadow-inner border border-slate-200 group-hover:scale-110 transition-transform duration-300">
                     🧘
                 </div>
                 <h3 className="font-bold text-slate-700 mb-1">Zen Master</h3>
-                <p className="text-xs text-slate-400 font-medium h-8">Maintain low stress for 1 week</p>
+                <p className="text-xs text-slate-400 font-medium h-8">Wellness Guru ({Math.min(20, strategies.length)}/20)</p>
                 <div className="mt-4 w-full bg-slate-200 rounded-full h-2 overflow-hidden shadow-inner flex relative">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '25%' }} transition={{ duration: 1, delay: 0.8 }} className="bg-indigo-300 h-2 outline-none rounded-full" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: Math.min(100, (strategies.length / 20) * 100) + '%' }} transition={{ duration: 1, delay: 0.8 }} className="bg-indigo-300 h-2 outline-none rounded-full" />
                 </div>
             </div>
         </div>

@@ -183,14 +183,18 @@ export default function StrategyPlanner() {
         logging: false,
       });
 
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
       const filename = `wellness-strategy-${user?.username || 'plan'}-${new Date().toISOString().split('T')[0]}`;
 
       if (type === 'png') {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `${filename}.png`;
-        link.href = dataUrl;
+        link.href = url;
         link.click();
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
       } else {
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -208,8 +212,10 @@ export default function StrategyPlanner() {
   };
 
   if (result) {
-    const sHours = result.studyHours !== undefined ? result.studyHours : (result.study_hours || 0);
-    const slHours = result.sleepHours !== undefined ? result.sleepHours : (result.sleep_hours || 0);
+    const sHours = Number(result.studyHours || formData.studyHours || 4);
+    const slHours = Number(result.sleepHours || formData.sleepHours || 7);
+    const wScore = Number(result.wellnessScore || result.wellness_score || wellnessScore || 0);
+    
     const chartData = [
         { name: 'Study', value: sHours, color: '#6366f1' },
         { name: 'Sleep', value: slHours, color: '#a855f7' },
@@ -284,7 +290,7 @@ export default function StrategyPlanner() {
                     <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-200/50 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
                     <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1 relative z-10">Wellness Score</p>
                     <p className="text-4xl font-black text-emerald-600 relative z-10">
-                        {result.wellnessScore !== undefined ? result.wellnessScore : (result.wellness_score || 0)}/100
+                        {wScore}/100
                     </p>
                 </div>
             </div>
@@ -297,7 +303,7 @@ export default function StrategyPlanner() {
                         <h3 className="font-bold text-slate-700">Study Habits</h3>
                     </div>
                     <p className="text-3xl font-bold text-slate-900 mb-1">
-                        {result.studyHours !== undefined ? result.studyHours : (result.study_hours || 0)}h <span className="text-sm font-normal text-slate-400">/ day</span>
+                        {sHours}h <span className="text-sm font-normal text-slate-400">/ day</span>
                     </p>
                     <p className="text-xs text-slate-400 mb-3">Recommended: 4–8 hrs</p>
                     <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1">
@@ -310,7 +316,7 @@ export default function StrategyPlanner() {
                         <h3 className="font-bold text-slate-700">Sleep Pattern</h3>
                     </div>
                     <p className="text-3xl font-bold text-slate-900 mb-1">
-                        {result.sleepHours !== undefined ? result.sleepHours : (result.sleep_hours || 0)}h <span className="text-sm font-normal text-slate-400">/ night</span>
+                        {slHours}h <span className="text-sm font-normal text-slate-400">/ night</span>
                     </p>
                     <p className="text-xs text-slate-400 mb-3">Ideal: 7–9 hrs</p>
                     <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1">

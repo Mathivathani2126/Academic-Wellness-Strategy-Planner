@@ -13,26 +13,78 @@ function generateFallbackAdvice(data) {
     
     const subjectList = subjects.length > 0 ? subjects : ['General Studies'];
     
-    const subjectStrategy = subjectList.map(s => {
-        let tips = "Emphasize active recall and structured review cycles. Use spaced repetition to reinforce core concepts.";
-        let resources = ["Course Textbook", "Official Course Modules", "Quizlet Flashcards"];
+    // Hash function to make "random" selection deterministic based on subject string
+    const getHash = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return Math.abs(hash);
+    };
+
+    const actionVerbs = ["Analyze", "Review", "Deconstruct", "Synthesize", "Practice", "Outline", "Map out", "Investigate", "Drill"];
+    const focusAreas = ["Core Fundamentals", "Advanced Problem Solving", "Theoretical Frameworks", "Practical Application", "Exam Technique", "Memorization", "Analytical Thinking"];
+    const materialTypes = ["Past Papers", "Video Lectures", "Flashcards", "Concept Maps", "Interactive Quizzes", "Summary Sheets", "Case Studies", "Textbook Chapters", "Study Group Notes"];
+
+    const subjectStrategy = subjectList.map((s, index) => {
+        const hash = getHash(s.toLowerCase().trim() || "x");
         
-        const sub = s.toLowerCase();
-        if (sub.includes('math') || sub.includes('phy') || sub.includes('calc')) {
-            tips = "Prioritize problem-solving over passive reading. Practice at least 20 varied questions daily to build solid muscle memory and pattern recognition.";
-            resources = ["Khan Academy", "Practice Worksheets", "Formula Cheat Sheet", "Past Exam Papers"];
-        } else if (sub.includes('bio') || sub.includes('chem') || sub.includes('med')) {
-            tips = "Use mnemonic devices and visual flashcards for deep memorization. Focus on understanding mechanisms, biological systems, and chemical reactions visually.";
-            resources = ["Anki Decks", "3D Interactive Models", "Concept Maps", "YouTube Explainer Videos"];
-        } else if (sub.includes('eng') || sub.includes('hist') || sub.includes('lit')) {
-            tips = "Focus on thematic understanding and essay structuring. Create mind maps linking key historical events or literary themes.";
-            resources = ["Essay Outlines", "Historical Timelines", "Critical Analysis Papers"];
-        } else if (sub.includes('cs') || sub.includes('code') || sub.includes('comp')) {
-            tips = "Build small projects to apply concepts. Spend less time reading docs and more time actually writing and debugging code.";
-            resources = ["LeetCode", "GitHub Repositories", "Interactive Coding Environments"];
+        let customTips = [];
+        const isMathy = s.toLowerCase().includes('math') || s.toLowerCase().includes('phy') || s.toLowerCase().includes('calc');
+        const isSci = s.toLowerCase().includes('bio') || s.toLowerCase().includes('chem') || s.toLowerCase().includes('med');
+        const isHum = s.toLowerCase().includes('eng') || s.toLowerCase().includes('hist') || s.toLowerCase().includes('lit') || s.toLowerCase().includes('eco');
+        
+        if (isMathy) {
+            customTips = [
+                `Complete ${4 + (hash % 5)} varied practice problems under timed conditions.`,
+                "Work backwards from the answer key to understand the methodology.",
+                "Build a personalized formula sheet specifically for " + s + " topics.",
+                "Identify and resolve bottlenecks in your foundational arithmetic or algebra.",
+                `Drill past exam setups relating to ${s}'s core theorems.`
+            ];
+        } else if (isSci) {
+            customTips = [
+                "Utilize spatial memory by drawing 3D diagrams of relevant systems.",
+                "Link individual facts to the broader scientific framework.",
+                "Create active-recall flashcards for key terminology and mechanisms.",
+                "Watch visual explainer videos to solidify abstract concepts.",
+                `Summarize textbook chapters of ${s} without looking at the material.`
+            ];
+        } else if (isHum) {
+            customTips = [
+                "Outline structured essays covering both supporting and opposing arguments.",
+                "Draft chronological timelines to understand cause and effect.",
+                "Analyze primary source texts for deeper thematic meaning.",
+                "Engage in debates or discussions to solidify your stance on topics.",
+                `Read secondary literature relating to ${s} to build context.`
+            ];
+        } else {
+            customTips = [
+                `${actionVerbs[hash % actionVerbs.length]} primary concepts and teach them to a peer.`,
+                `Dedicate 25 minutes strictly to ${focusAreas[hash % focusAreas.length].toLowerCase()}.`,
+                "Transform passive reading into active notes using the Cornell method.",
+                "Test yourself on earlier modules to strengthen spaced repetition.",
+                `Set up a specific ${s} study group to bounce ideas around.`
+            ];
         }
         
-        return { subject: s, tips, resources };
+        // Randomize based on hash and index so even identical categories get different tips
+        const selectedTips = [
+            customTips[(hash) % customTips.length],
+            customTips[(hash + 1 + index) % customTips.length],
+            customTips[(hash + 2 + index) % customTips.length],
+            customTips[(hash + 3 + index) % customTips.length]
+        ];
+        
+        // Remove duplicates and format
+        const uniqueTips = [...new Set(selectedTips)];
+        let tipsString = uniqueTips.map(t => "• " + t).join("\n");
+
+        const resources = [
+            materialTypes[hash % materialTypes.length] + " (" + s + ")",
+            materialTypes[(hash + 3 + index) % materialTypes.length],
+            materialTypes[(hash + 5 + index) % materialTypes.length]
+        ];
+        
+        return { subject: s, tips: tipsString, resources };
     });
 
     const focusAdvice = stressLevel === 'High' 
@@ -125,11 +177,19 @@ function generateFallbackAdvice(data) {
         ],
         timetable,
         subjectStrategy,
-        recommendedMaterials: subjectList.map(s => ({
-            subject: s,
-            focusArea: "Core Fundamentals & Theory",
-            materials: ["Past Examination Papers", "Interactive E-Learning Modules", "Chapter Summary Notes", "Practice Quizzes"]
-        })),
+        recommendedMaterials: subjectList.map((s, index) => {
+            const hash = getHash(s.toLowerCase().trim() || "x");
+            return {
+                subject: s,
+                focusArea: focusAreas[(hash + index) % focusAreas.length],
+                materials: [
+                    materialTypes[(hash + 1) % materialTypes.length] + " for " + s,
+                    materialTypes[(hash + 4) % materialTypes.length],
+                    materialTypes[(hash + 7 + index) % materialTypes.length],
+                    "Customized " + s + " Notes"
+                ]
+            }
+        }),
         focusAdvice,
         burnoutRisk: stressLevel === 'High' ? "High" : stressLevel === 'Low' ? "Low" : "Moderate",
         energyTip
