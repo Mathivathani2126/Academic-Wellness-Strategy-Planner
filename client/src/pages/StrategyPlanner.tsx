@@ -176,25 +176,43 @@ export default function StrategyPlanner() {
       // Small delay to allow UI to update and animations to settle
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      // Scroll fix: remember current scroll, capture with offset correction
       const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
-        logging: false,
+        logging: true,
+        scrollY: -window.scrollY, // Fixes blank exports if user is scrolled down
+        windowWidth: document.documentElement.offsetWidth,
       });
 
       const dataUrl = canvas.toDataURL('image/png', 1.0);
       const filename = `wellness-strategy-${user?.username || 'plan'}-${new Date().toISOString().split('T')[0]}`;
 
       if (type === 'png') {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
+        // Safe robust Base64 manual Blob conversion
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)![1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
+        link.style.display = 'none';
         link.download = `${filename}.png`;
         link.href = url;
+        document.body.appendChild(link);
         link.click();
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
       } else {
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
