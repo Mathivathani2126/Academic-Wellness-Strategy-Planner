@@ -6,11 +6,12 @@ import {
   Brain, ArrowLeft, Clock, Activity, BookOpen, Calendar, 
   Target, Zap, Plus, X, Info, CheckCircle2, AlertCircle,
   BarChart2, Moon, Flame, Lightbulb, Sun, Sunset, Battery,
-  Download, Timer, Award, AlertTriangle, TrendingUp, TrendingDown, RotateCcw
+  Download, Timer, Award, AlertTriangle, TrendingUp, TrendingDown, RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import PomodoroTimer from '../components/PomodoroTimer';
 
 const GOALS = [
@@ -172,31 +173,30 @@ export default function StrategyPlanner() {
 
     setExporting(type);
     try {
-      // Small delay to allow UI to update
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Small delay to allow UI to update and animations to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
-        ignoreElements: (element) => element.classList.contains('no-print'),
-        logging: false, // Disable logging for production
+        logging: false,
       });
 
+      const dataUrl = canvas.toDataURL('image/png');
       const filename = `wellness-strategy-${user?.username || 'plan'}-${new Date().toISOString().split('T')[0]}`;
 
       if (type === 'png') {
         const link = document.createElement('a');
         link.download = `${filename}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.href = dataUrl;
         link.click();
       } else {
-        const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`${filename}.pdf`);
       }
     } catch (err) {
@@ -208,10 +208,12 @@ export default function StrategyPlanner() {
   };
 
   if (result) {
+    const sHours = result.studyHours !== undefined ? result.studyHours : (result.study_hours || 0);
+    const slHours = result.sleepHours !== undefined ? result.sleepHours : (result.sleep_hours || 0);
     const chartData = [
-        { name: 'Study', value: result.study_hours, color: '#6366f1' },
-        { name: 'Sleep', value: result.sleep_hours, color: '#a855f7' },
-        { name: 'Leisure', value: Math.max(0, 24 - result.study_hours - result.sleep_hours), color: '#cbd5e1' },
+        { name: 'Study', value: sHours, color: '#6366f1' },
+        { name: 'Sleep', value: slHours, color: '#a855f7' },
+        { name: 'Leisure', value: Math.max(0, 24 - sHours - slHours), color: '#cbd5e1' },
     ];
 
     const burnoutColor = 
@@ -221,8 +223,8 @@ export default function StrategyPlanner() {
 
     // Cognitive State Logic
     const getCognitiveState = () => {
-        if (result.sleep_hours >= 7 && formData.stressLevel === 'Low') return { label: 'Peak Flow 🚀', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' };
-        if (result.sleep_hours >= 6 && formData.stressLevel === 'Moderate') return { label: 'Balanced ⚖️', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
+        if (result.sleepHours >= 7 && formData.stressLevel === 'Low') return { label: 'Peak Flow 🚀', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' };
+        if (result.sleepHours >= 6 && formData.stressLevel === 'Moderate') return { label: 'Balanced ⚖️', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
         return { label: 'Mental Fatigue 🧠', color: 'text-amber-600 bg-amber-50 border-amber-100' };
     };
     const cognitiveState = getCognitiveState();
@@ -278,42 +280,49 @@ export default function StrategyPlanner() {
                     <h1 className="text-3xl font-bold text-slate-900 mb-1">Your Wellness Strategy</h1>
                     <p className="text-slate-500">Generated for {user?.username?.toUpperCase()}</p>
                 </div>
-                <div className="bg-emerald-50 border border-emerald-100 px-6 py-4 rounded-2xl text-center">
-                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Wellness Score</p>
-                    <p className="text-4xl font-black text-emerald-600">{result.wellness_score}/100</p>
+                <div className="bg-emerald-50 border border-emerald-100 px-6 py-4 rounded-2xl text-center shadow-inner relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-200/50 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
+                    <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1 relative z-10">Wellness Score</p>
+                    <p className="text-4xl font-black text-emerald-600 relative z-10">
+                        {result.wellnessScore !== undefined ? result.wellnessScore : (result.wellness_score || 0)}/100
+                    </p>
                 </div>
             </div>
 
             {/* Top Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="border border-slate-100 rounded-2xl p-6">
+                <div className="bg-white border border-indigo-50/50 shadow-sm hover:shadow-md transition-shadow rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><BookOpen size={20} /></div>
                         <h3 className="font-bold text-slate-700">Study Habits</h3>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">{result.study_hours}h <span className="text-sm font-normal text-slate-400">/ day</span></p>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">
+                        {result.studyHours !== undefined ? result.studyHours : (result.study_hours || 0)}h <span className="text-sm font-normal text-slate-400">/ day</span>
+                    </p>
                     <p className="text-xs text-slate-400 mb-3">Recommended: 4–8 hrs</p>
                     <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1">
                         <CheckCircle2 size={12} /> Well Balanced
                     </div>
                 </div>
-                <div className="border border-slate-100 rounded-2xl p-6">
+                <div className="bg-white border border-purple-50/50 shadow-sm hover:shadow-md transition-shadow rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><Moon size={20} /></div>
                         <h3 className="font-bold text-slate-700">Sleep Pattern</h3>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">{result.sleep_hours}h <span className="text-sm font-normal text-slate-400">/ night</span></p>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">
+                        {result.sleepHours !== undefined ? result.sleepHours : (result.sleep_hours || 0)}h <span className="text-sm font-normal text-slate-400">/ night</span>
+                    </p>
                     <p className="text-xs text-slate-400 mb-3">Ideal: 7–9 hrs</p>
                     <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1">
                         <CheckCircle2 size={12} /> Optimal Rest
                     </div>
                 </div>
-                <div className="border border-slate-100 rounded-2xl p-6">
+                <div className="bg-white border border-rose-50/50 shadow-sm hover:shadow-md transition-shadow rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-rose-50 rounded-lg text-rose-600"><Target size={20} /></div>
                         <h3 className="font-bold text-slate-700">Plan Focus</h3>
                     </div>
-                    <p className="text-xl font-bold text-slate-900 mb-1">{result.mode}</p>
+                    <p className="text-xl font-bold text-slate-900 mb-1">{result.mode || 'Balanced'}</p>
                     <p className="text-xs text-slate-400">Exam Freq: {formData.examFrequency}</p>
                 </div>
             </div>
@@ -572,27 +581,34 @@ export default function StrategyPlanner() {
 
             {/* Subject Strategies */}
             {result.advice.subjectStrategy && result.advice.subjectStrategy.length > 0 && (
-                <div className="bg-white border border-slate-100 rounded-2xl p-6 mb-8">
+                <div className="bg-white border border-slate-100 rounded-2xl p-6 mb-8 shadow-sm">
                     <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
                         <BookOpen size={20} className="text-indigo-600" /> 
                         Subject-Specific Strategies & Resources
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {result.advice.subjectStrategy.map((strategy: any, i: number) => (
-                            <div key={i} className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                                <h5 className="font-bold text-slate-800 mb-2 text-lg">{strategy.subject}</h5>
-                                <p className="text-sm text-slate-600 mb-4 italic">"{strategy.tips}"</p>
-                                
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Recommended Resources</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {strategy.resources?.map((resource: string, j: number) => (
-                                            <span key={j} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-medium text-indigo-600">
-                                                {resource}
-                                            </span>
-                                        ))}
-                                    </div>
+                            <div key={i} className="bg-slate-50/70 rounded-xl p-6 border border-slate-100 hover:border-indigo-100 transition-colors">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="p-2 bg-white rounded-lg shadow-sm font-bold text-indigo-600 flex-none">{strategy.subject.slice(0, 2).toUpperCase()}</div>
+                                    <h5 className="font-bold text-slate-800 text-lg">{strategy.subject}</h5>
                                 </div>
+                                <p className="text-sm text-slate-600 mb-5 leading-relaxed">"{strategy.tips}"</p>
+                                
+                                {strategy.resources && strategy.resources.length > 0 && (
+                                    <div className="bg-white p-4 rounded-lg border border-slate-100">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                            <Sparkles size={14} className="text-amber-500" /> Recommended Resources
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {strategy.resources.map((resource: string, j: number) => (
+                                                <span key={j} className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors cursor-default">
+                                                    {resource}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
