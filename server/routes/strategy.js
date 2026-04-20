@@ -222,7 +222,10 @@ router.post('/', authMiddleware, async (req, res) => {
 - Productivity Peak: ${productivityPattern || 'Morning'}
 - Stress Level: ${stressLevel || 'Moderate'}
 
-You MUST return a JSON object ONLY matching this precise schema:
+You MUST return a JSON object ONLY matching this precise schema, and you MUST follow these strict uniqueness rules:
+1. Under 'subjectStrategy.tips', you MUST provide exactly 3 to 4 distinct bullet points per subject. 
+2. EVERY bullet point and EVERY material MUST be 100% unique per subject. NEVER copy-paste the same materials or tips across different subjects. No overlap is allowed.
+
 {
   "do": ["string (at least 5 actionable, specific tips)"],
   "avoid": ["string (at least 5 things to avoid)"],
@@ -238,15 +241,15 @@ You MUST return a JSON object ONLY matching this precise schema:
   "subjectStrategy": [
     {
       "subject": "string",
-      "tips": "string (specific strategy for this subject)",
-      "resources": ["string"]
+      "tips": "string (EXACTLY 3-4 bullet points with newlines, ENTIRELY UNIQUE to this subject and not repeated for any other subject)",
+      "resources": ["string (100% unique resources)"]
     }
   ],
   "recommendedMaterials": [
     {
       "subject": "string",
       "focusArea": "string",
-      "materials": ["string"]
+      "materials": ["string (100% unique materials that don't match any other subject's materials)"]
     }
   ],
   "focusAdvice": "string (A motivational and highly specific sentence for today)",
